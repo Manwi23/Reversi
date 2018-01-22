@@ -14,6 +14,7 @@ gboolean pomoc;
 gboolean otherIsReady = 0;
 gboolean boardPrepared = 0;
 gboolean change1ToRed;
+int whosTurn = 1;
 
 GtkWidget* tablica[20][20];
 int gra[20][20] = {0};
@@ -30,11 +31,120 @@ void pokazBlad(char *komunikat)
     gtk_widget_destroy (dialog);
 }
 
+static gboolean button_press_callback (GtkWidget *event_box, GdkEventButton *event, gpointer data) {
+    const char *name = gtk_widget_get_name(event_box);
+    coords c = readWhere(name);
+    printf("%d %d\n", c.w, c.k);
+    if (whosTurn == 1 && can1MakeAMove(gra, c.w, c.k)==1) {
+        MakeA1Move(gra, c.w, c.k);
+        whosTurn = 2;
+        updateBoard();
+        sprintf(message, "1mh%dw%dk", c.w, c.k);
+        przekaz_tekst();
+    } else if (whosTurn == 2 && can2MakeAMove(gra, c.w, c.k)==1) {
+        MakeA2Move(gra, c.w, c.k);
+        whosTurn = 1;
+        updateBoard();
+        sprintf(message, "2mh%dw%dk", c.w, c.k);
+        przekaz_tekst();
+    }
+    return TRUE;
+}
+
+void updateBoard() {
+    GtkWidget *child1 = gtk_bin_get_child(GTK_BIN(window));
+    GList *lista = gtk_container_get_children(GTK_CONTAINER(child1));
+    GtkWidget *plansza = lista->data;
+    for (int i=0; i<wys; i++) {
+        for (int j=0; j<szer; j++) {
+            if (gra[i][j]==1) {
+                GtkWidget *pp = gtk_grid_get_child_at(GTK_GRID(plansza), i, j);
+                GList *list = gtk_container_get_children(GTK_CONTAINER(pp));
+                list = g_list_nth(list, 0);
+                pp = list->data;
+                list = gtk_container_get_children(GTK_CONTAINER(list->data));
+                list = g_list_nth(list, 0);
+                gtk_widget_destroy(list->data);
+                GdkPixbuf *pixbuf;
+                if (!change1ToRed) {
+                    pixbuf = gdk_pixbuf_new_from_file("black.png", NULL);
+                } else {
+                    pixbuf = gdk_pixbuf_new_from_file("red.png", NULL);
+                }
+                GdkPixbuf *newpixbuf = gdk_pixbuf_scale_simple(GDK_PIXBUF(pixbuf), 100, 100, GDK_INTERP_NEAREST);
+                GtkWidget *image = gtk_image_new_from_pixbuf(GDK_PIXBUF(newpixbuf));
+                gtk_container_add(GTK_CONTAINER(pp), image);
+            } else if (gra[i][j]==2) {
+                GtkWidget *pp = gtk_grid_get_child_at(GTK_GRID(plansza), i, j);
+                GList *list = gtk_container_get_children(GTK_CONTAINER(pp));
+                list = g_list_nth(list, 0);
+                pp = list->data;
+                list = gtk_container_get_children(GTK_CONTAINER(list->data));
+                list = g_list_nth(list, 0);
+                gtk_widget_destroy(list->data);
+                GdkPixbuf *pixbuf;
+                if (!change1ToRed) {
+                    pixbuf = gdk_pixbuf_new_from_file("red.png", NULL);
+                } else {
+                    pixbuf = gdk_pixbuf_new_from_file("black.png", NULL);
+                }
+                GdkPixbuf *newpixbuf = gdk_pixbuf_scale_simple(GDK_PIXBUF(pixbuf), 100, 100, GDK_INTERP_NEAREST);
+                GtkWidget *image = gtk_image_new_from_pixbuf(GDK_PIXBUF(newpixbuf));
+                gtk_container_add(GTK_CONTAINER(pp), image);
+            } else if (gra[i][j]==0 && whosTurn==1 && gracz==1 && can1MakeAMove(gra, i, j)==1 && pomoc==1) {
+                GtkWidget *pp = gtk_grid_get_child_at(GTK_GRID(plansza), i, j);
+                GList *list = gtk_container_get_children(GTK_CONTAINER(pp));
+                list = g_list_nth(list, 0);
+                pp = list->data;
+                list = gtk_container_get_children(GTK_CONTAINER(list->data));
+                list = g_list_nth(list, 0);
+                gtk_widget_destroy(list->data);
+                GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file("bluesmall.png", NULL);
+                GdkPixbuf *newpixbuf = gdk_pixbuf_scale_simple(GDK_PIXBUF(pixbuf), 100, 100, GDK_INTERP_NEAREST);
+                GtkWidget *image = gtk_image_new_from_pixbuf(GDK_PIXBUF(newpixbuf));
+                gtk_container_add(GTK_CONTAINER(pp), image);
+            } else if (gra[i][j]==0 && whosTurn==2 && gracz==2 && can2MakeAMove(gra, i, j)==1 && pomoc) {
+                GtkWidget *pp = gtk_grid_get_child_at(GTK_GRID(plansza), i, j);
+                GList *list = gtk_container_get_children(GTK_CONTAINER(pp));
+                list = g_list_nth(list, 0);
+                pp = list->data;
+                list = gtk_container_get_children(GTK_CONTAINER(list->data));
+                list = g_list_nth(list, 0);
+                gtk_widget_destroy(list->data);
+                GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file("bluesmall.png", NULL);
+                GdkPixbuf *newpixbuf = gdk_pixbuf_scale_simple(GDK_PIXBUF(pixbuf), 100, 100, GDK_INTERP_NEAREST);
+                GtkWidget *image = gtk_image_new_from_pixbuf(GDK_PIXBUF(newpixbuf));
+                gtk_container_add(GTK_CONTAINER(pp), image);
+            } else {
+                GtkWidget *pp = gtk_grid_get_child_at(GTK_GRID(plansza), i, j);
+                GList *list = gtk_container_get_children(GTK_CONTAINER(pp));
+                list = g_list_nth(list, 0);
+                pp = list->data;
+                list = gtk_container_get_children(GTK_CONTAINER(list->data));
+                list = g_list_nth(list, 0);
+                gtk_widget_destroy(list->data);
+                GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file("blank.png", NULL);
+                GdkPixbuf *newpixbuf = gdk_pixbuf_scale_simple(GDK_PIXBUF(pixbuf), 100, 100, GDK_INTERP_NEAREST);
+                GtkWidget *image = gtk_image_new_from_pixbuf(GDK_PIXBUF(newpixbuf));
+                gtk_container_add(GTK_CONTAINER(pp), image);
+            }
+        }
+    }
+
+    gtk_widget_show_all(plansza);
+
+    return;
+}
+
+
 
 void makeBoard () {
     GtkWidget *child1 = gtk_bin_get_child(GTK_BIN(window));
     GList *lista = gtk_container_get_children(GTK_CONTAINER(child1));
     GtkWidget *plansza = lista->data;
+
+    char name[5];
+
     for (int i=0; i<wys; i++) {
         for (int j=0; j<szer; j++) {
             GtkWidget *pole = gtk_frame_new(NULL);
@@ -67,22 +177,41 @@ void makeBoard () {
 
             GdkPixbuf *newpixbuf = gdk_pixbuf_scale_simple(GDK_PIXBUF(pixbuf), 100, 100, GDK_INTERP_NEAREST);
             GtkWidget *image = gtk_image_new_from_pixbuf(GDK_PIXBUF(newpixbuf));
-            gtk_container_add(GTK_CONTAINER(pole), image);
+
+            GtkWidget *eventBox = gtk_event_box_new();
+            gtk_container_add(GTK_CONTAINER(pole), eventBox);
+            gtk_container_add(GTK_CONTAINER(eventBox), image);
+            g_signal_connect (G_OBJECT (eventBox), "button_press_event", G_CALLBACK (button_press_callback), image);
+
+            sprintf(name, "%d,%d", j, i);
+            gtk_widget_set_name(eventBox, name);
+
             tablica[j][i]=pole;
             gtk_grid_attach(GTK_GRID(plansza), tablica[j][i], j, i, 1, 1);
         }
     }
-    gtk_widget_show_all(window);
-    gtk_widget_destroy(windowWait);
 
-    /*
+
     for (int i=0; i<wys; i++) {
         for (int j=0; j<szer; j++) {
-            printf("%d ", can1MakeAMove(gra, i, j));
+            if (can1MakeAMove(gra, i, j) && gracz==1 && pomoc==1) {
+                GtkWidget *pp = gtk_grid_get_child_at(GTK_GRID(plansza), i, j);
+                GList *list = gtk_container_get_children(GTK_CONTAINER(pp));
+                list = g_list_nth(list, 0);
+                pp = list->data;
+                list = gtk_container_get_children(GTK_CONTAINER(list->data));
+                list = g_list_nth(list, 0);
+                gtk_widget_destroy(list->data);
+                GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file("bluesmall.png", NULL);
+                GdkPixbuf *newpixbuf = gdk_pixbuf_scale_simple(GDK_PIXBUF(pixbuf), 100, 100, GDK_INTERP_NEAREST);
+                GtkWidget *image = gtk_image_new_from_pixbuf(GDK_PIXBUF(newpixbuf));
+                gtk_container_add(GTK_CONTAINER(pp), image);
+            }
         }
-        printf("\n");
     }
-    */
+
+    gtk_widget_show_all(window);
+    gtk_widget_destroy(windowWait);
 
 }
 
@@ -118,7 +247,7 @@ void readInfoAndDestroyWindow ()
             otherIsReady=1;
             makeBoard();
         }
-        sprintf(message, "1rh%dw%dk", wys, szer);
+        sprintf(message, "1rh%dw%dk%d", wys, szer, change1ToRed);
         przekaz_tekst();
         if (!otherIsReady){
             gtk_widget_show_all(windowWait);
@@ -153,14 +282,18 @@ void readInfoProperly() {
         th[0]=message[5];
         if (message[6]!='k') {
             th[1]=message[6];
+            change1ToRed = message[8]-'0';
         } else {
             th[1]='\0';
+            change1ToRed = message[7]-'0';
         }
     } else {
         th[0]=message[6];
         if (message[7]!='k') {
             th[1]=message[7];
+            change1ToRed = message[9]-'0';
         } else {
+            change1ToRed = message[8]-'0';
             th[1]='\0';
         }
     }
@@ -365,17 +498,31 @@ void przekaz_tekst()
 
 gboolean pobierz_tekst(gpointer data)
 {
-    printf("%s\n", message);
-    getStringFromPipe(potoki,message,20);
-    if (message[0]=='1' && message[1]=='r' && gracz==2 && !boardPrepared) {
-        boardPrepared = 1;
-        readInfoProperly();
-        makeBoard();
+  //  printf("%s\n", message);
+    if (getStringFromPipe(potoki,message,20)) {
+        if (message[0]=='1' && message[1]=='r' && gracz==2 && !boardPrepared) {
+            boardPrepared = 1;
+            readInfoProperly();
+            makeBoard();
+        }
+        if (message[0]=='2' && message[1]=='r' && gracz==1 && !boardPrepared) {
+            boardPrepared = 1;
+            makeBoard();
+        }
+        /*if (message[0]=='1' && message[1]=='m' && gracz==2 && whosTurn==1) {
+            whosTurn = 2;
+            readInfo();
+            updateBoard();
+        }
+        if (message[0]=='2' && message[1]=='m' && gracz==1 && whosTurn==2) {
+            whosTurn = 1;
+            readInfo();
+            updateBoard();
+        }
+        */
+        ///przygotowac te fkcje!
     }
-    if (message[0]=='2' && message[1]=='r' && gracz==1 && !boardPrepared) {
-        boardPrepared = 1;
-        makeBoard();
-    }
+
     return TRUE;
 }
 
