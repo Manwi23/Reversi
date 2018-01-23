@@ -5,7 +5,7 @@
 ///jak zrobic to czekanie zeby nie bylo az tak debilne
 
 
-GtkWidget *window, *window1, *windowWait;
+GtkWidget *window, *window1, *windowWait, *windowEnd;
 int gracz;
 static PipesPtr potoki;
 
@@ -22,31 +22,51 @@ int gra[20][20] = {0};
 gchar message[10];
 
 
-void pokazBlad(char *komunikat)
-{
-    GtkWidget *dialog;
-    dialog=gtk_message_dialog_new (GTK_WINDOW(window),GTK_DIALOG_DESTROY_WITH_PARENT,
-				   GTK_MESSAGE_ERROR,GTK_BUTTONS_CLOSE,"%s",komunikat);
-    gtk_dialog_run (GTK_DIALOG (dialog));
-    gtk_widget_destroy (dialog);
-}
-
 static gboolean button_press_callback (GtkWidget *event_box, GdkEventButton *event, gpointer data) {
     const char *name = gtk_widget_get_name(event_box);
     coords c = readWhere(name);
-    printf("%d %d\n", c.w, c.k);
-    if (whosTurn == 1 && can1MakeAMove(gra, c.w, c.k)==1) {
-        MakeA1Move(gra, c.w, c.k);
+  //  printf("%d %d\n", c.w, c.k);
+    if (whosTurn == 1 && can1MakeAMove(gra, c)==1 && gracz==1) {
+        MakeA1Move(gra, c);
         whosTurn = 2;
-        updateBoard();
+
         sprintf(message, "1mh%dw%dk", c.w, c.k);
         przekaz_tekst();
-    } else if (whosTurn == 2 && can2MakeAMove(gra, c.w, c.k)==1) {
-        MakeA2Move(gra, c.w, c.k);
-        whosTurn = 1;
+
+        if (can2MakeAMoveAtAll(gra, wys, szer)==0) {
+            if (can1MakeAMoveAtAll(gra, wys, szer)==0) {
+                coords res =  endOfTheGame(gra);
+                char s[100];
+                prepareMessage(s, res);
+                appendMessage(s, windowEnd);
+                gtk_widget_show_all(windowEnd);
+            } else {
+                whosTurn = 1;
+            }
+        }
+
         updateBoard();
+
+    } else if (whosTurn == 2 && can2MakeAMove(gra, c)==1 && gracz==2) {
+        MakeA2Move(gra, c);
+        whosTurn = 1;
+
         sprintf(message, "2mh%dw%dk", c.w, c.k);
         przekaz_tekst();
+
+        if (can1MakeAMoveAtAll(gra, wys, szer)==0) {
+            if (can2MakeAMoveAtAll(gra, wys, szer)==0) {
+                coords res =  endOfTheGame(gra);
+                char s[100];
+                prepareMessage(s, res);
+                appendMessage(s, windowEnd);
+                gtk_widget_show_all(windowEnd);
+            } else {
+                whosTurn = 2;
+            }
+        }
+
+        updateBoard();
     }
     return TRUE;
 }
@@ -55,8 +75,11 @@ void updateBoard() {
     GtkWidget *child1 = gtk_bin_get_child(GTK_BIN(window));
     GList *lista = gtk_container_get_children(GTK_CONTAINER(child1));
     GtkWidget *plansza = lista->data;
+    coords c;
     for (int i=0; i<wys; i++) {
         for (int j=0; j<szer; j++) {
+            c.w = i;
+            c.k = j;
             if (gra[i][j]==1) {
                 GtkWidget *pp = gtk_grid_get_child_at(GTK_GRID(plansza), i, j);
                 GList *list = gtk_container_get_children(GTK_CONTAINER(pp));
@@ -91,7 +114,7 @@ void updateBoard() {
                 GdkPixbuf *newpixbuf = gdk_pixbuf_scale_simple(GDK_PIXBUF(pixbuf), 100, 100, GDK_INTERP_NEAREST);
                 GtkWidget *image = gtk_image_new_from_pixbuf(GDK_PIXBUF(newpixbuf));
                 gtk_container_add(GTK_CONTAINER(pp), image);
-            } else if (gra[i][j]==0 && whosTurn==1 && gracz==1 && can1MakeAMove(gra, i, j)==1 && pomoc==1) {
+            } else if (gra[i][j]==0 && whosTurn==1 && gracz==1 && can1MakeAMove(gra, c)==1 && pomoc==1) {
                 GtkWidget *pp = gtk_grid_get_child_at(GTK_GRID(plansza), i, j);
                 GList *list = gtk_container_get_children(GTK_CONTAINER(pp));
                 list = g_list_nth(list, 0);
@@ -103,7 +126,7 @@ void updateBoard() {
                 GdkPixbuf *newpixbuf = gdk_pixbuf_scale_simple(GDK_PIXBUF(pixbuf), 100, 100, GDK_INTERP_NEAREST);
                 GtkWidget *image = gtk_image_new_from_pixbuf(GDK_PIXBUF(newpixbuf));
                 gtk_container_add(GTK_CONTAINER(pp), image);
-            } else if (gra[i][j]==0 && whosTurn==2 && gracz==2 && can2MakeAMove(gra, i, j)==1 && pomoc) {
+            } else if (gra[i][j]==0 && whosTurn==2 && gracz==2 && can2MakeAMove(gra, c)==1 && pomoc) {
                 GtkWidget *pp = gtk_grid_get_child_at(GTK_GRID(plansza), i, j);
                 GList *list = gtk_container_get_children(GTK_CONTAINER(pp));
                 list = g_list_nth(list, 0);
@@ -191,10 +214,12 @@ void makeBoard () {
         }
     }
 
-
+    coords c;
     for (int i=0; i<wys; i++) {
         for (int j=0; j<szer; j++) {
-            if (can1MakeAMove(gra, i, j) && gracz==1 && pomoc==1) {
+            c.w = i;
+            c.k = j;
+            if (can1MakeAMove(gra, c) && gracz==1 && pomoc==1) {
                 GtkWidget *pp = gtk_grid_get_child_at(GTK_GRID(plansza), i, j);
                 GList *list = gtk_container_get_children(GTK_CONTAINER(pp));
                 list = g_list_nth(list, 0);
@@ -372,6 +397,28 @@ int main(int argc,char *argv[])
     GtkWidget *napisWait = gtk_label_new(NULL);
     gtk_container_add(GTK_CONTAINER(boxWait), napisWait);
 
+    windowEnd = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    if (gracz==1) {
+        gtk_window_set_title(GTK_WINDOW(windowEnd),"Game over - player 1");
+    } else {
+        gtk_window_set_title(GTK_WINDOW(windowEnd),"Game over - player 2");
+    }
+
+    gtk_window_set_position(GTK_WINDOW(windowEnd),GTK_WIN_POS_CENTER);
+    gtk_container_set_border_width(GTK_CONTAINER(windowEnd), 10);
+    g_signal_connect(G_OBJECT(windowEnd), "destroy",G_CALLBACK(gtk_main_quit), NULL);
+
+    GtkWidget *boxMainEnd = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    gtk_container_add(GTK_CONTAINER(windowEnd), boxMainEnd);
+    GtkWidget *ramkaEnd = gtk_frame_new(NULL);
+    GtkWidget *napisEnd = gtk_label_new(NULL);
+    gtk_container_add(GTK_CONTAINER(ramkaEnd), napisEnd);
+    gtk_box_pack_start(GTK_BOX(boxMainEnd), ramkaEnd, TRUE, TRUE, 20);
+    GtkWidget *buttonEnd=gtk_button_new_with_label("Quit game");
+    g_signal_connect(G_OBJECT(buttonEnd), "clicked",G_CALLBACK(gtk_main_quit), NULL);
+    gtk_container_add(GTK_CONTAINER(boxMainEnd), buttonEnd);
+
+
 
     if (gracz == 1) {
         GtkWidget *yoText = gtk_label_new("You're player 1, so you choose board properties");
@@ -407,7 +454,7 @@ int main(int argc,char *argv[])
 
 
         ///ogarnac tego buttona
-        GtkWidget *checkbox = gtk_check_button_new_with_label("Show hints");
+        GtkWidget *checkbox = gtk_check_button_new_with_label("Show possible moves");
         gtk_grid_attach(GTK_GRID(grid), checkbox, 1, 3, 2, 1);
 
         GtkWidget *checkbox1 = gtk_check_button_new_with_label("Change my discs to red (default black)");
@@ -435,7 +482,7 @@ int main(int argc,char *argv[])
         GtkWidget *yoText = gtk_label_new("You're player 2, so you wait for player 1 to choose board properties");
         gtk_container_add(GTK_CONTAINER(boxMain), yoText);
 
-        GtkWidget *checkbox = gtk_check_button_new_with_label("Show hints");
+        GtkWidget *checkbox = gtk_check_button_new_with_label("Show possible moves");
         gtk_box_pack_start(GTK_BOX(boxMain), checkbox, TRUE, FALSE, 0);
 
         GtkWidget *button = gtk_button_new_with_label("Start game");
@@ -457,7 +504,9 @@ int main(int argc,char *argv[])
     gtk_window_set_title(GTK_WINDOW(window),name);
     gtk_window_set_position(GTK_WINDOW(window),GTK_WIN_POS_CENTER);
     gtk_container_set_border_width(GTK_CONTAINER(window), 10);
-    g_signal_connect(G_OBJECT(window), "destroy",G_CALLBACK(gtk_main_quit), NULL);
+
+    ///napisać tu inną fkcję do kończenia
+    g_signal_connect(G_OBJECT(window), "destroy",G_CALLBACK(surrender), NULL);
 
     GtkWidget *mainBoxGame = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_container_add(GTK_CONTAINER(window), mainBoxGame);
@@ -472,7 +521,7 @@ int main(int argc,char *argv[])
     ///moze go dodac do tego grida?
     GtkWidget *zakonczgre = gtk_button_new_with_label("Surrender");
     gtk_box_pack_end(GTK_BOX(mainBoxGame), zakonczgre, FALSE, TRUE, 10);
-    g_signal_connect(G_OBJECT(zakonczgre), "clicked", G_CALLBACK(zakoncz), window);
+    g_signal_connect(G_OBJECT(zakonczgre), "clicked", G_CALLBACK(surrender), window);
 
     //GdkScreen *screen = gdk_screen_get_default ();
    // GdkScreen *screen = gtk_window_get_screen(GTK_WINDOW(window1));
@@ -509,18 +558,54 @@ gboolean pobierz_tekst(gpointer data)
             boardPrepared = 1;
             makeBoard();
         }
-        /*if (message[0]=='1' && message[1]=='m' && gracz==2 && whosTurn==1) {
+        if (message[0]=='1' && message[1]=='m' && gracz==2 && whosTurn==1) {
             whosTurn = 2;
-            readInfo();
+            coords c = readInfoAboutAMove(message);
+            MakeA1Move(gra, c);
+
+            if (can2MakeAMoveAtAll(gra, wys, szer)==0) {
+                if (can1MakeAMoveAtAll(gra, wys, szer)==0) {
+                    coords res =  endOfTheGame(gra);
+                    char s[100];
+                    prepareMessage(s, res);
+                    appendMessage(s, windowEnd);
+                    gtk_widget_show_all(windowEnd);
+                } else {
+                    whosTurn = 1;
+                }
+            }
+
             updateBoard();
         }
         if (message[0]=='2' && message[1]=='m' && gracz==1 && whosTurn==2) {
             whosTurn = 1;
-            readInfo();
+            coords c = readInfoAboutAMove(message);
+            MakeA2Move(gra, c);
+
+            if (can1MakeAMoveAtAll(gra, wys, szer)==0) {
+                if (can2MakeAMoveAtAll(gra, wys, szer)==0) {
+                    coords res =  endOfTheGame(gra);
+                    char s[100];
+                    prepareMessage(s, res);
+                    appendMessage(s, windowEnd);
+                    gtk_widget_show_all(windowEnd);
+                } else {
+                    whosTurn = 2;
+                }
+            }
+
             updateBoard();
         }
-        */
-        ///przygotowac te fkcje!
+        if (message[0]=='1' && message[1]=='s') {
+            char s[100] = "Player 1 has surrendered!";
+            appendMessage(s, windowEnd);
+            gtk_widget_show_all(windowEnd);
+        }
+        if (message[0]=='2' && message[1]=='s') {
+            char s[100] = "Player 2 has surrendered!";
+            appendMessage(s, windowEnd);
+            gtk_widget_show_all(windowEnd);
+        }
     }
 
     return TRUE;
@@ -530,9 +615,17 @@ void pobierz_tekst1() {
     getStringFromPipe(potoki,message,20);
 }
 
-void zakoncz(GtkWidget *widget, gpointer data)
+void surrender(GtkWidget *widget, gpointer data)
 {
-  closePipes(potoki);
-  gtk_main_quit();
+    if (gracz==1) {
+        sprintf(message, "1s");
+    } else {
+        sprintf(message, "2s");
+    }
+    przekaz_tekst();
+
+    closePipes(potoki);
+    gtk_main_quit();
 }
+
 

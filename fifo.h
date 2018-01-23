@@ -21,4 +21,4 @@ void     closePipes(PipesPtr channel);
 void przekaz_tekst();
 gboolean pobierz_tekst(gpointer data);
 void pobierz_tekst1();
-void zakoncz(GtkWidget *widget, gpointer data);
+void surrender(GtkWidget *widget, gpointer data);

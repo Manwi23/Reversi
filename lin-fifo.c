@@ -46,21 +46,23 @@ PipesPtr initPipes(int argc,char *argv[])
 
 static FILE *openOutPipe(char *name) {
     FILE *pipe = fopen(name, "w+");
-    if (pipe == NULL)
+    /*if (pipe == NULL)
     {
         pokazBlad("Error in creating output pipe");
         exit(-1);
     }
+    */
     return pipe;
 }
 
 static FILE *openInPipe(char *name){
     FILE *pipe = fopen(name, "r+");
-    if (pipe == NULL)
+   /* if (pipe == NULL)
     {
         pokazBlad("Error in creating input pipe");
         exit(-1);
     }
+    */
     int flags, fd;
     fd = fileno(pipe);
     flags = fcntl(fd, F_GETFL);
@@ -70,10 +72,11 @@ static FILE *openInPipe(char *name){
 
 void sendStringToPipe(PipesPtr pipes, const char *data)
 {
-    int result = fprintf(pipes->fifo_out,"%s",data);
+    /*int result = */fprintf(pipes->fifo_out,"%s",data);
     fflush(pipes->fifo_out);
-    if (result == 0)
+   /* if (result == 0)
         pokazBlad("Failed to send data");
+        */
 }
 
 bool getStringFromPipe(PipesPtr pipes, char *buffer, size_t size)
