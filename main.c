@@ -2,8 +2,6 @@
 #include "fifo.h"
 #include "reversi.h"
 
-///jak zrobic to czekanie zeby nie bylo az tak debilne
-
 
 GtkWidget *window, *window1, *windowWait, *windowEnd;
 int gracz;
