@@ -17,10 +17,16 @@ void updateBoard();
 
 
 coords readInfoAboutAMove(char message[]);
-int can2MakeAMoveAtAll(int tab[][20], int wys, int szer);
-int can1MakeAMoveAtAll(int tab[][20], int wys, int szer);
+int can2MakeAMoveAtAll(int tab[][20], int heigth, int width);
+int can1MakeAMoveAtAll(int tab[][20], int heigth, int width);
 
 coords endOfTheGame(int tab[][20]);
 
 void prepareMessage(char s[], coords res);
 void appendMessage(char s[], GtkWidget *windowEnd);
+
+void appendDisc(int type, GtkWidget *board, int i, int j);
+
+coords readInfoProperly();
+
+void appendHints(GtkWidget *board, int heigth, int width, int game[][20]);

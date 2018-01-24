@@ -825,11 +825,11 @@ coords readInfoAboutAMove(char message[]){
     return c;
 }
 
-int can2MakeAMoveAtAll(int tab[][20], int wys, int szer) {
+int can2MakeAMoveAtAll(int tab[][20], int heigth, int width) {
     int b = 0;
     coords c;
-    for (c.w=0; c.w<wys && !b; c.w++) {
-        for (c.k=0; c.k<szer && !b; c.k++) {
+    for (c.w=0; c.w<heigth && !b; c.w++) {
+        for (c.k=0; c.k<width && !b; c.k++) {
             if (can2MakeAMove(tab, c)) {
                 b=1;
             }
@@ -838,11 +838,11 @@ int can2MakeAMoveAtAll(int tab[][20], int wys, int szer) {
     return b;
 }
 
-int can1MakeAMoveAtAll(int tab[][20], int wys, int szer) {
+int can1MakeAMoveAtAll(int tab[][20], int heigth, int width) {
     int b = 0;
     coords c;
-    for (c.w=0; c.w<wys && !b; c.w++) {
-        for (c.k=0; c.k<szer && !b; c.k++) {
+    for (c.w=0; c.w<heigth && !b; c.w++) {
+        for (c.k=0; c.k<width && !b; c.k++) {
             if (can1MakeAMove(tab, c)) {
                 b=1;
             }
@@ -852,7 +852,6 @@ int can1MakeAMoveAtAll(int tab[][20], int wys, int szer) {
 }
 
 coords endOfTheGame(int tab[][20]) {
-    printf("Koniec gry\n");
     coords c;
     c.w=0;
     c.k=0;
@@ -886,5 +885,90 @@ void appendMessage(char s[], GtkWidget *windowEnd) {
     GList *list = gtk_container_get_children(GTK_CONTAINER(box));
     list = gtk_container_get_children(GTK_CONTAINER(list->data));
     gtk_label_set_text(GTK_LABEL(list->data),s);
+    return;
+}
+
+
+void appendDisc(int type, GtkWidget *board, int i, int j) {
+    GtkWidget *pp = gtk_grid_get_child_at(GTK_GRID(board), i, j);
+    GList *list = gtk_container_get_children(GTK_CONTAINER(pp));
+    list = g_list_nth(list, 0);
+    pp = list->data;
+    list = gtk_container_get_children(GTK_CONTAINER(list->data));
+    list = g_list_nth(list, 0);
+    gtk_widget_destroy(list->data);
+    GdkPixbuf *pixbuf;
+    if (type==1) {
+        pixbuf = gdk_pixbuf_new_from_file("black.png", NULL);
+    } else if (type==2) {
+        pixbuf = gdk_pixbuf_new_from_file("red.png", NULL);
+    } else if (type==3) {
+        pixbuf = gdk_pixbuf_new_from_file("bluesmall.png", NULL);
+    } else {
+        pixbuf = gdk_pixbuf_new_from_file("blank.png", NULL);
+    }
+    GdkPixbuf *newpixbuf = gdk_pixbuf_scale_simple(GDK_PIXBUF(pixbuf), 100, 100, GDK_INTERP_NEAREST);
+    GtkWidget *image = gtk_image_new_from_pixbuf(GDK_PIXBUF(newpixbuf));
+    gtk_container_add(GTK_CONTAINER(pp), image);
+    return;
+}
+
+
+coords readInfoProperly(gchar message[]) {
+    int change =0;
+    coords c;
+    char th[2];
+    th[0]=message[3];
+    if (message[4]!='s') {
+        th[1]=message[4];
+    }
+    c.w = atoi(th);
+    if (message[5]!='s') {
+        th[0]=message[5];
+        if (message[6]!='k') {
+            th[1]=message[6];
+            change = message[8]-'0';
+        } else {
+            th[1]='\0';
+            change = message[7]-'0';
+        }
+    } else {
+        th[0]=message[6];
+        if (message[7]!='k') {
+            th[1]=message[7];
+            change = message[9]-'0';
+        } else {
+            change = message[8]-'0';
+            th[1]='\0';
+        }
+    }
+    c.k=atoi(th);
+    if (change==1) {
+        c.k--;
+    }
+    return c;
+}
+
+void appendHints(GtkWidget *board, int heigth, int width, int game[][20]) {
+    coords c;
+    for (int i=0; i<heigth; i++) {
+        for (int j=0; j<width; j++) {
+            c.w = i;
+            c.k = j;
+            if (can1MakeAMove(game, c)) {
+                GtkWidget *pp = gtk_grid_get_child_at(GTK_GRID(board), i, j);
+                GList *list = gtk_container_get_children(GTK_CONTAINER(pp));
+                list = g_list_nth(list, 0);
+                pp = list->data;
+                list = gtk_container_get_children(GTK_CONTAINER(list->data));
+                list = g_list_nth(list, 0);
+                gtk_widget_destroy(list->data);
+                GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file("bluesmall.png", NULL);
+                GdkPixbuf *newpixbuf = gdk_pixbuf_scale_simple(GDK_PIXBUF(pixbuf), 100, 100, GDK_INTERP_NEAREST);
+                GtkWidget *image = gtk_image_new_from_pixbuf(GDK_PIXBUF(newpixbuf));
+                gtk_container_add(GTK_CONTAINER(pp), image);
+            }
+        }
+    }
     return;
 }
