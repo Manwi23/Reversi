@@ -543,7 +543,7 @@ void MakeA1Move (int tab[][20], coords c) {
                     }
                     ap = a;
                     bp = b;
-                    while (bp>0 && ap>0 && czyRuch) {
+                    while (bp>0 && ap>0 && czyRuch==1) {
                         if (tab[ap-1][bp-1]==2) {
                             tab[ap-1][bp-1]=1;
                             ap--;
@@ -668,7 +668,7 @@ void MakeA2Move (int tab[][20], coords c) {
                     }
                     ap = a;
                     bp = b;
-                    while (ap<19 && bp<19) {
+                    while (ap<19 && bp<19 && czyRuch==1) {
                         if (tab[ap+1][bp+1]==1) {
                             tab[ap+1][bp+1]=2;
                             ap++;
@@ -782,7 +782,7 @@ void MakeA2Move (int tab[][20], coords c) {
                     }
                     ap = a;
                     bp = b;
-                    while (bp>0 && ap>0 && czyRuch) {
+                    while (bp>0 && ap>0 && czyRuch==1) {
                         if (tab[ap-1][bp-1]==1) {
                             tab[ap-1][bp-1]=2;
                             ap--;
@@ -880,12 +880,15 @@ void prepareMessage(char s[], coords res) {
 }
 
 
-void appendMessage(char s[], GtkWidget *windowEnd) {
+void appendMessage(char s[], GtkWidget *windowEnd, int type) {
     GtkWidget *box = gtk_bin_get_child(GTK_BIN(windowEnd));
     GList *list = gtk_container_get_children(GTK_CONTAINER(box));
-    list = gtk_container_get_children(GTK_CONTAINER(list->data));
-    gtk_label_set_text(GTK_LABEL(list->data),s);
-    return;
+    GList *list1 = gtk_container_get_children(GTK_CONTAINER(list->data));
+    gtk_label_set_text(GTK_LABEL(list1->data),s);
+    if (type==1) {
+        GList *list2 = g_list_nth(list, 2);
+        gtk_widget_destroy(GTK_WIDGET(list2->data));
+    }
 }
 
 
@@ -971,4 +974,75 @@ void appendHints(GtkWidget *board, int heigth, int width, int game[][20]) {
         }
     }
     return;
+}
+
+
+void destroyNewGameButton(GtkWidget *window) {
+    GtkWidget *box = gtk_bin_get_child(GTK_BIN(window));
+    GList *list = gtk_container_get_children(GTK_CONTAINER(box));
+    GList *list1 = g_list_nth(list, 1);
+    gtk_widget_hide(list1->data);
+    GList *list2 = g_list_nth(list, 2);
+    gtk_widget_destroy(list2->data);
+    list = g_list_nth(list, 3);
+    GtkWidget *text = list->data;
+    gtk_label_set_text(GTK_LABEL(text), "The other player has left the game.");
+    gtk_widget_show_all(window);
+}
+
+void clearBoard(int heigth, int width, gboolean change, int game[][20]) {
+    for (int i=0; i<heigth; i++) {
+        for (int j=0; j<width; j++) {
+            if (((i+1)*2==heigth && (j+1)*2==width) || (i*2==heigth && j*2==width)) {
+                if (change) {
+                    game[i][j] = 2;
+                } else {
+                    game[i][j] = 1;
+                }
+            } else if ((i*2==heigth && (j+1)*2==width) || ((i+1)*2==heigth && j*2==width)) {
+                if (change) {
+                    game[i][j] = 1;
+                } else {
+                    game[i][j] = 2;
+                }
+            } else {
+                game[i][j] = 0;
+            }
+        }
+    }
+}
+
+void appendWaitingInfo(GtkWidget *window) {
+    GtkWidget *box = gtk_bin_get_child(GTK_BIN(window));
+    GList *list = gtk_container_get_children(GTK_CONTAINER(box));
+    GList *list1 = g_list_nth(list, 1);
+    gtk_widget_hide(list1->data);
+    GList *list2 = g_list_nth(list, 2);
+    gtk_widget_hide(list2->data);
+    list = g_list_nth(list, 3);
+    GtkWidget *text = list->data;
+    gtk_label_set_text(GTK_LABEL(text), "Waiting for the other player for a new game");
+    gtk_widget_show_all(window);
+}
+
+void appendWantingInfo(GtkWidget *window) {
+    GtkWidget *box = gtk_bin_get_child(GTK_BIN(window));
+    GList *list = gtk_container_get_children(GTK_CONTAINER(box));
+    list = g_list_nth(list, 3);
+    GtkWidget *text = list->data;
+    gtk_label_set_text(GTK_LABEL(text), "The other player is ready for a new game");
+    gtk_widget_show_all(window);
+}
+
+void renewWaitingInfo(GtkWidget *window) {
+    GtkWidget *box = gtk_bin_get_child(GTK_BIN(window));
+    GList *list = gtk_container_get_children(GTK_CONTAINER(box));
+    GList *list1 = g_list_nth(list, 1);
+    gtk_widget_show(list1->data);
+    GList *list2 = g_list_nth(list, 2);
+    gtk_widget_show(list2->data);
+    list = g_list_nth(list, 3);
+    GtkWidget *text = list->data;
+    gtk_label_set_text(GTK_LABEL(text), "Cool game!");
+    gtk_widget_hide(window);
 }

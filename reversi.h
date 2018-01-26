@@ -23,10 +23,26 @@ int can1MakeAMoveAtAll(int tab[][20], int heigth, int width);
 coords endOfTheGame(int tab[][20]);
 
 void prepareMessage(char s[], coords res);
-void appendMessage(char s[], GtkWidget *windowEnd);
+void appendMessage(char s[], GtkWidget *windowEnd, int type);
 
 void appendDisc(int type, GtkWidget *board, int i, int j);
 
 coords readInfoProperly();
 
 void appendHints(GtkWidget *board, int heigth, int width, int game[][20]);
+void destroyNewGameButton(GtkWidget *window);
+
+void endMyGame();
+void newGameAfterTheEnd();
+void newGameAfterTheEndButton();
+void canWePleasePlayANewGameNow();
+void returnToGame();
+void showAskWindow();
+void denyAndReturnToGame();
+void agreeAndPlayNew();
+void newGame();
+void closeAndReturn();
+void clearBoard(int heigth, int width, gboolean change, int game[][20]);
+void appendWaitingInfo(GtkWidget *window);
+void renewWaitingInfo(GtkWidget *window);
+void appendWantingInfo(GtkWidget *window);
