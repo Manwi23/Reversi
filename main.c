@@ -8,6 +8,7 @@ int player;
 static PipesPtr streams;
 
 int width=-1, heigth=-1;
+int imgSize = 100;
 gboolean hilfe;
 gboolean otherIsReady = 0;
 gboolean boardPrepared = 0;
@@ -73,22 +74,22 @@ void updateBoard() {
             c.k = j;
             if (game[i][j]==1) {
                 if (!change1ToRed) {
-                    appendDisc(1, board, i, j);
+                    appendDisc(1, board, i, j, imgSize);
                 } else {
-                    appendDisc(2, board, i, j);
+                    appendDisc(2, board, i, j, imgSize);
                 }
             } else if (game[i][j]==2) {
                 if (!change1ToRed) {
-                    appendDisc(2, board, i, j);
+                    appendDisc(2, board, i, j, imgSize);
                 } else {
-                    appendDisc(1, board, i, j);
+                    appendDisc(1, board, i, j, imgSize);
                 }
             } else if (game[i][j]==0 && whosTurn==1 && player==1 && can1MakeAMove(game, c)==1 && hilfe==1) {
-                appendDisc(3, board, i, j);
+                appendDisc(3, board, i, j, imgSize);
             } else if (game[i][j]==0 && whosTurn==2 && player==2 && can2MakeAMove(game, c)==1 && hilfe==1) {
-                appendDisc(3, board, i, j);
+                appendDisc(3, board, i, j, imgSize);
             } else {
-                appendDisc(4, board, i, j);
+                appendDisc(4, board, i, j, imgSize);
             }
         }
     }
@@ -107,8 +108,10 @@ void updateBoard() {
 }
 
 
-
 void makeBoard () {
+
+    imgSize = setImgSize(heigth, width);
+
     GtkWidget *child1 = gtk_bin_get_child(GTK_BIN(window));
     GList *list = gtk_container_get_children(GTK_CONTAINER(child1));
     GtkWidget *board = list->data;
@@ -138,7 +141,7 @@ void makeBoard () {
                 game[i][j] = 0;
             }
 
-            GdkPixbuf *newpixbuf = gdk_pixbuf_scale_simple(GDK_PIXBUF(pixbuf), 100, 100, GDK_INTERP_NEAREST);
+            GdkPixbuf *newpixbuf = gdk_pixbuf_scale_simple(GDK_PIXBUF(pixbuf), imgSize, imgSize, GDK_INTERP_NEAREST);
             GtkWidget *image = gtk_image_new_from_pixbuf(GDK_PIXBUF(newpixbuf));
 
             GtkWidget *eventBox = gtk_event_box_new();
@@ -153,7 +156,7 @@ void makeBoard () {
     }
 
     if (hilfe==1 && player==1) {
-        appendHints(board, heigth, width, game);
+        appendHints(board, heigth, width, game, imgSize);
     }
 
     GtkWidget *result = (list->next)->data;
@@ -256,19 +259,9 @@ void readAndDestroyWindow ()
     if (!otherIsReady){
 
         gtk_widget_show_all(windowWait);
-        /*
-        gint x=-1;
-        gint y=-1;
-        gtk_window_get_position(GTK_WINDOW(window1), &x, &y);
-        printf("%d %d\n", (x), (y));
-        gtk_window_move(GTK_WINDOW(windowWait), x+40, y+40);
-        gtk_window_get_position(GTK_WINDOW(windowWait), &x, &y);
-        printf("%d %d\n", (x), (y));
-        */
-
-
         gtk_window_set_keep_above(GTK_WINDOW(windowWait), TRUE);
     }
+
     gtk_widget_hide(window1);
 }
 
@@ -412,7 +405,6 @@ int main(int argc,char *argv[])
     }
 
     gtk_widget_show_all(window1);
-
 
     char name[100];
     sprintf(name, "Reversi - game - player %d", player);

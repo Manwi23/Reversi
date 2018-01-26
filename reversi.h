@@ -25,12 +25,13 @@ coords endOfTheGame(int tab[][20]);
 void prepareMessage(char s[], coords res);
 void appendMessage(char s[], GtkWidget *windowEnd, int type);
 
-void appendDisc(int type, GtkWidget *board, int i, int j);
+void appendDisc(int type, GtkWidget *board, int i, int j, int imgSize);
 
 coords readInfoProperly();
 
-void appendHints(GtkWidget *board, int heigth, int width, int game[][20]);
+void appendHints(GtkWidget *board, int heigth, int width, int game[][20], int imgSize);
 void destroyNewGameButton(GtkWidget *window);
+int setImgSize(int heigth, int width);
 
 void endMyGame();
 void newGameAfterTheEnd();

@@ -802,11 +802,11 @@ coords readInfoAboutAMove(char message[]){
     coords c;
     char th[2];
     th[0]=message[3];
-    if (message[4]!='s') {
+    if (message[4]!='w') {
         th[1]=message[4];
     }
     c.w = atoi(th);
-    if (message[5]!='s') {
+    if (message[5]!='w') {
         th[0]=message[5];
         if (message[6]!='k') {
             th[1]=message[6];
@@ -892,7 +892,7 @@ void appendMessage(char s[], GtkWidget *windowEnd, int type) {
 }
 
 
-void appendDisc(int type, GtkWidget *board, int i, int j) {
+void appendDisc(int type, GtkWidget *board, int i, int j, int imgSize) {
     GtkWidget *pp = gtk_grid_get_child_at(GTK_GRID(board), i, j);
     GList *list = gtk_container_get_children(GTK_CONTAINER(pp));
     list = g_list_nth(list, 0);
@@ -910,7 +910,7 @@ void appendDisc(int type, GtkWidget *board, int i, int j) {
     } else {
         pixbuf = gdk_pixbuf_new_from_file("blank.png", NULL);
     }
-    GdkPixbuf *newpixbuf = gdk_pixbuf_scale_simple(GDK_PIXBUF(pixbuf), 100, 100, GDK_INTERP_NEAREST);
+    GdkPixbuf *newpixbuf = gdk_pixbuf_scale_simple(GDK_PIXBUF(pixbuf), imgSize, imgSize, GDK_INTERP_NEAREST);
     GtkWidget *image = gtk_image_new_from_pixbuf(GDK_PIXBUF(newpixbuf));
     gtk_container_add(GTK_CONTAINER(pp), image);
     return;
@@ -922,11 +922,11 @@ coords readInfoProperly(gchar message[]) {
     coords c;
     char th[2];
     th[0]=message[3];
-    if (message[4]!='s') {
+    if (message[4]!='w') {
         th[1]=message[4];
     }
     c.w = atoi(th);
-    if (message[5]!='s') {
+    if (message[5]!='w') {
         th[0]=message[5];
         if (message[6]!='k') {
             th[1]=message[6];
@@ -952,7 +952,7 @@ coords readInfoProperly(gchar message[]) {
     return c;
 }
 
-void appendHints(GtkWidget *board, int heigth, int width, int game[][20]) {
+void appendHints(GtkWidget *board, int heigth, int width, int game[][20], int imgSize) {
     coords c;
     for (int i=0; i<heigth; i++) {
         for (int j=0; j<width; j++) {
@@ -967,7 +967,7 @@ void appendHints(GtkWidget *board, int heigth, int width, int game[][20]) {
                 list = g_list_nth(list, 0);
                 gtk_widget_destroy(list->data);
                 GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file("bluesmall.png", NULL);
-                GdkPixbuf *newpixbuf = gdk_pixbuf_scale_simple(GDK_PIXBUF(pixbuf), 100, 100, GDK_INTERP_NEAREST);
+                GdkPixbuf *newpixbuf = gdk_pixbuf_scale_simple(GDK_PIXBUF(pixbuf), imgSize, imgSize, GDK_INTERP_NEAREST);
                 GtkWidget *image = gtk_image_new_from_pixbuf(GDK_PIXBUF(newpixbuf));
                 gtk_container_add(GTK_CONTAINER(pp), image);
             }
@@ -1045,4 +1045,21 @@ void renewWaitingInfo(GtkWidget *window) {
     GtkWidget *text = list->data;
     gtk_label_set_text(GTK_LABEL(text), "Cool game!");
     gtk_widget_hide(window);
+}
+
+
+int setImgSize(int heigth, int width) {
+    GdkDisplay *display = gdk_display_get_default();
+    GdkMonitor *monitor = gdk_display_get_monitor_at_point(display, 0, 0);
+    GdkRectangle geo;
+    gdk_monitor_get_geometry(monitor, &geo);
+    int temp_w = geo.width/2 * 7 / 10;
+    int temp_h = geo.height * 6 / 10;
+    int pro1 = temp_w / width;
+    int pro2 = temp_h / heigth;
+    if (pro1<pro2) {
+        return pro1;
+    } else {
+        return pro2;
+    }
 }
