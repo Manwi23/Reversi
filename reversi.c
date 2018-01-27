@@ -1,5 +1,7 @@
 #include "reversi.h"
 
+gchar nn[100] = "";
+
 
 int can1MakeAMove (int tab[][20], coords c) {
     int a = c.w;
@@ -825,6 +827,7 @@ coords readInfoAboutAMove(char message[]){
     return c;
 }
 
+
 int can2MakeAMoveAtAll(int tab[][20], int heigth, int width) {
     int b = 0;
     coords c;
@@ -916,6 +919,26 @@ void appendDisc(int type, GtkWidget *board, int i, int j, int imgSize) {
     return;
 }
 
+void getName(gchar nname[]) {
+    strcpy(nname, nn);
+    return;
+}
+
+void checkNames(int player, gchar myName[], gchar hisName[]) {
+    if (strcmp(myName, hisName)==0) {
+        gchar s[100]="";
+        sprintf(s, " (player %d)", player);
+        strcat(myName, s);
+        if (player==1) {
+            player=2;
+        } else {
+            player=1;
+        }
+        sprintf(s, " (player %d)", player);
+        strcat(hisName, s);
+    }
+    return;
+}
 
 coords readInfoProperly(gchar message[]) {
     int change =0;
@@ -931,17 +954,21 @@ coords readInfoProperly(gchar message[]) {
         if (message[6]!='k') {
             th[1]=message[6];
             change = message[8]-'0';
+            strcpy(nn, message+9);
         } else {
             th[1]='\0';
             change = message[7]-'0';
+            strcpy(nn, message+8);
         }
     } else {
         th[0]=message[6];
         if (message[7]!='k') {
             th[1]=message[7];
             change = message[9]-'0';
+            strcpy(nn, message+10);
         } else {
             change = message[8]-'0';
+            strcpy(nn, message+9);
             th[1]='\0';
         }
     }
@@ -951,6 +978,8 @@ coords readInfoProperly(gchar message[]) {
     }
     return c;
 }
+
+
 
 void appendHints(GtkWidget *board, int heigth, int width, int game[][20], int imgSize) {
     coords c;

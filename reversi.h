@@ -32,6 +32,9 @@ coords readInfoProperly();
 void appendHints(GtkWidget *board, int heigth, int width, int game[][20], int imgSize);
 void destroyNewGameButton(GtkWidget *window);
 int setImgSize(int heigth, int width);
+void updateNames();
+void getName(gchar nname[]);
+void checkNames(int player, gchar myName[], gchar hisName[]);
 
 void endMyGame();
 void newGameAfterTheEnd();
