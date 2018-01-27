@@ -19,7 +19,7 @@ int whosTurn = 1;
 
 int game[20][20] = {0};
 
-gchar message[10]="";
+gchar message[100]="";
 
 
 static gboolean button_press_callback (GtkWidget *event_box, GdkEventButton *event, gpointer data) {
@@ -298,6 +298,7 @@ int main(int argc,char *argv[])
     gtk_box_pack_start(GTK_BOX(box1), frame, TRUE, TRUE, 20);
 
     windowWait = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    //windowWait = gtk_dialog_new();
     gtk_window_set_title(GTK_WINDOW(windowWait),"Hold on...");
     gtk_window_set_position(GTK_WINDOW(windowWait),GTK_WIN_POS_CENTER);
     gtk_container_set_border_width(GTK_CONTAINER(windowWait), 10);
@@ -305,8 +306,10 @@ int main(int argc,char *argv[])
     gtk_container_add(GTK_CONTAINER(windowWait), boxWait);
     GtkWidget *writingWait = gtk_label_new("");
     gtk_container_add(GTK_CONTAINER(boxWait), writingWait);
+    gtk_window_set_transient_for(GTK_WINDOW(windowWait), GTK_WINDOW(window1));
 
     windowEnd = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    gtk_window_set_transient_for(GTK_WINDOW(windowEnd), GTK_WINDOW(window));
     if (player==1) {
         gtk_window_set_title(GTK_WINDOW(windowEnd),"Game over - player 1");
     } else {
@@ -315,7 +318,7 @@ int main(int argc,char *argv[])
 
     gtk_window_set_position(GTK_WINDOW(windowEnd),GTK_WIN_POS_CENTER);
     gtk_container_set_border_width(GTK_CONTAINER(windowEnd), 10);
-    g_signal_connect(G_OBJECT(windowEnd), "destroy", G_CALLBACK(gtk_main_quit), NULL);
+    g_signal_connect(G_OBJECT(windowEnd), "destroy", G_CALLBACK(endMyGame), NULL);
 
     GtkWidget *boxMainEnd = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_container_add(GTK_CONTAINER(windowEnd), boxMainEnd);
@@ -507,7 +510,7 @@ void sendText()
 
 gboolean getText(gpointer data)
 {
-    if (getStringFromPipe(streams,message,20)) {
+    if (getStringFromPipe(streams,message,100)) {
         if (message[0]=='1' && message[1]=='r' && player==2 && !boardPrepared) {
             boardPrepared = 1;
             coords c = readInfoProperly(message);

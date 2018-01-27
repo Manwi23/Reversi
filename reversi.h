@@ -43,6 +43,7 @@ void denyAndReturnToGame();
 void agreeAndPlayNew();
 void newGame();
 void closeAndReturn();
+void propositionDenied();
 void clearBoard(int heigth, int width, gboolean change, int game[][20]);
 void appendWaitingInfo(GtkWidget *window);
 void renewWaitingInfo(GtkWidget *window);

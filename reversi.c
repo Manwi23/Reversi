@@ -1018,11 +1018,11 @@ void appendWaitingInfo(GtkWidget *window) {
     GList *list1 = g_list_nth(list, 1);
     gtk_widget_hide(list1->data);
     GList *list2 = g_list_nth(list, 2);
-    gtk_widget_hide(list2->data);
     list = g_list_nth(list, 3);
     GtkWidget *text = list->data;
-    gtk_label_set_text(GTK_LABEL(text), "Waiting for the other player for a new game");
+    gtk_label_set_text(GTK_LABEL(text), "Waiting for the other player to accept a new game");
     gtk_widget_show_all(window);
+    gtk_widget_hide(list2->data);
 }
 
 void appendWantingInfo(GtkWidget *window) {
