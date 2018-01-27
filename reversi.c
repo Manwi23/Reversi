@@ -871,11 +871,11 @@ coords endOfTheGame(int tab[][20]) {
 }
 
 
-void prepareMessage(char s[], coords res) {
+void prepareMessage(char s[], coords res, gchar myName[], gchar hisName[]) {
     if (res.w>res.k) {
-        sprintf(s, "Game over!\nPlayer 1 won with %d discs, player 2 came second with %d discs.", res.w, res.k);
+        sprintf(s, "Game over!\n%s won with %d discs, %s came second with %d discs.", myName, res.w, hisName, res.k);
     } else if (res.k>res.w) {
-        sprintf(s, "Game over!\nPlayer 2 won with %d discs, player 1 came second with %d discs.", res.k, res.w);
+        sprintf(s, "Game over!\n%s won with %d discs, %s came second with %d discs.", hisName, res.k, myName, res.w);
     } else {
         sprintf(s, "Game over!\nIt's a draw! Each player has %d discs.", res.w);
     }

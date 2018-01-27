@@ -37,7 +37,7 @@ static gboolean button_press_callback (GtkWidget *event_box, GdkEventButton *eve
             if (can1MakeAMoveAtAll(game, heigth, width)==0) {
                 coords res =  endOfTheGame(game);
                 char s[100];
-                prepareMessage(s, res);
+                prepareMessage(s, res, myName, hisName);
                 appendMessage(s, windowEnd, 0);
                 gtk_widget_show_all(windowEnd);
             } else {
@@ -54,7 +54,7 @@ static gboolean button_press_callback (GtkWidget *event_box, GdkEventButton *eve
             if (can2MakeAMoveAtAll(game, heigth, width)==0) {
                 coords res =  endOfTheGame(game);
                 char s[100];
-                prepareMessage(s, res);
+                prepareMessage(s, res, hisName, myName);
                 appendMessage(s, windowEnd, 0);
                 gtk_widget_show_all(windowEnd);
             } else {
@@ -563,7 +563,7 @@ gboolean getText(gpointer data)
                 if (can1MakeAMoveAtAll(game, heigth, width)==0) {
                     coords res =  endOfTheGame(game);
                     char s[100];
-                    prepareMessage(s, res);
+                    prepareMessage(s, res, hisName, myName);
                     appendMessage(s, windowEnd, 0);
                     gtk_widget_show_all(windowEnd);
                 } else {
@@ -582,7 +582,7 @@ gboolean getText(gpointer data)
                 if (can2MakeAMoveAtAll(game, heigth, width)==0) {
                     coords res =  endOfTheGame(game);
                     char s[100];
-                    prepareMessage(s, res);
+                    prepareMessage(s, res, myName, hisName);
                     appendMessage(s, windowEnd, 0);
                     gtk_widget_show_all(windowEnd);
                 } else {
@@ -769,4 +769,9 @@ void updateNames() {
     gtk_window_set_title(GTK_WINDOW(window),s);
     sprintf(s, "Game over - %s", myName);
     gtk_window_set_title(GTK_WINDOW(windowEnd),s);
+    GtkWidget *child = gtk_bin_get_child(GTK_BIN(windowWait));
+    GList *list = gtk_container_get_children(GTK_CONTAINER(child));
+    child = list->data;
+    sprintf(s, "\nWaiting for %s to choose their options\n", hisName);
+    gtk_label_set_text(GTK_LABEL(child), s);
 }

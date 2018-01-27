@@ -22,7 +22,7 @@ int can1MakeAMoveAtAll(int tab[][20], int heigth, int width);
 
 coords endOfTheGame(int tab[][20]);
 
-void prepareMessage(char s[], coords res);
+void prepareMessage(char s[], coords res, gchar myName[], gchar hisName[]);
 void appendMessage(char s[], GtkWidget *windowEnd, int type);
 
 void appendDisc(int type, GtkWidget *board, int i, int j, int imgSize);
