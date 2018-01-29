@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include "fifo.h"
 #include "reversi.h"
 
@@ -105,7 +104,6 @@ void updateBoard() {
         sprintf(s, "Your discs: %d\tOpponent's discs: %d", c.k, c.w);
     }
     gtk_label_set_text(GTK_LABEL(result), s);
-
     gtk_widget_show_all(window);
     return;
 }
@@ -121,7 +119,7 @@ void makeBoard () {
     GList *list = gtk_container_get_children(GTK_CONTAINER(child1));
     GtkWidget *board = list->data;
 
-    char name[5];
+    char name[20];
 
     for (int i=0; i<heigth; i++) {
         for (int j=0; j<width; j++) {
@@ -192,8 +190,18 @@ void readInfoAndDestroyWindow ()
     GtkWidget *field1 = gtk_grid_get_child_at(GTK_GRID(grid), 2, 1);
     const gchar *entry = gtk_entry_get_text (GTK_ENTRY(field1));
 
-    strcpy(myName, entry);
-    strcpy(myNameBase, myName);
+    if (entry[0]!='\0') {
+        strcpy(myName, entry);
+        strcpy(myNameBase, myName);
+    } else {
+        if (player==1) {
+            sprintf(myName, "Player 1");
+            sprintf(myNameBase, "Player 1");
+        } else {
+            sprintf(myName, "Player 2");
+            sprintf(myNameBase, "Player 2");
+        }
+    }
 
     field1 = gtk_grid_get_child_at(GTK_GRID(grid), 2, 3);
     entry = gtk_entry_get_text (GTK_ENTRY(field1));
@@ -211,7 +219,7 @@ void readInfoAndDestroyWindow ()
 
     if (heigth%2==0 && width%2==0 && heigth>=6 && width>=6 && heigth<=18 && width<=18) {
         getText1();
-        if (message[0]=='2') {
+        if (message[0]=='2' && message[1]=='r') {
             otherIsReady=1;
             strcpy(hisName, message+2);
             makeBoard();
@@ -267,7 +275,7 @@ void readAndDestroyWindow ()
     hilfe = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button));
     getText1();
 
-    if (message[0]=='1') {
+    if (message[0]=='1' && message[1]=='r') {
         otherIsReady=1;
         coords c = readInfoProperly(message);
         applyBoardSize(c);
@@ -307,6 +315,7 @@ int main(int argc,char *argv[])
     gtk_window_set_title(GTK_WINDOW(window1),"Reversi - options");
     gtk_window_set_position(GTK_WINDOW(window1),GTK_WIN_POS_CENTER);
     gtk_container_set_border_width(GTK_CONTAINER(window1), 10);
+    g_signal_connect(G_OBJECT(window1), "destroy", G_CALLBACK(endMyGame), NULL);
 
     GtkWidget *boxMain = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_container_add(GTK_CONTAINER(window1), boxMain);
@@ -320,14 +329,18 @@ int main(int argc,char *argv[])
     gtk_box_pack_start(GTK_BOX(box1), frame, TRUE, TRUE, 20);
 
     windowWait = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    gtk_window_set_transient_for(GTK_WINDOW(windowWait), GTK_WINDOW(window1));
+   // windowWait = gtk_dialog_new();
     gtk_window_set_title(GTK_WINDOW(windowWait),"Hold on...");
-    gtk_window_set_position(GTK_WINDOW(windowWait),GTK_WIN_POS_CENTER);
+    gtk_window_set_position(GTK_WINDOW(windowWait),GTK_WIN_POS_CENTER_ON_PARENT);
     gtk_container_set_border_width(GTK_CONTAINER(windowWait), 10);
     GtkWidget *boxWait = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_container_add(GTK_CONTAINER(windowWait), boxWait);
+  //  GtkWidget *boxWait = gtk_dialog_get_content_area(GTK_DIALOG(windowWait));
     GtkWidget *writingWait = gtk_label_new("");
     gtk_container_add(GTK_CONTAINER(boxWait), writingWait);
-    gtk_window_set_transient_for(GTK_WINDOW(windowWait), GTK_WINDOW(window1));
+    g_signal_connect(G_OBJECT(windowWait), "destroy", G_CALLBACK(endMyGame), NULL);
+
 
     windowEnd = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_transient_for(GTK_WINDOW(windowEnd), GTK_WINDOW(window));
@@ -363,7 +376,7 @@ int main(int argc,char *argv[])
 
         GtkWidget *nameLabel = gtk_label_new("Insert your name:");
 
-        GtkWidget *yoText = gtk_label_new("You're player 1, so you choose board properties");
+        GtkWidget *yoText = gtk_label_new("You're Player 1, so you choose board properties");
 
         GtkWidget *box2 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
         gtk_container_add(GTK_CONTAINER(boxMain), box2);
@@ -414,12 +427,12 @@ int main(int argc,char *argv[])
         GtkWidget *valueInfo = gtk_label_new("Values inserted above should be even numbers from range <6,18>");
         gtk_container_add(GTK_CONTAINER(box3), valueInfo);
 
-        gtk_label_set_text(GTK_LABEL(writingWait),"\nWaiting for player 2 to choose their options\n");
+        gtk_label_set_text(GTK_LABEL(writingWait),"\nWaiting for Player 2 to choose their options\n");
 
     } else {
 
 
-        GtkWidget *yoText = gtk_label_new("You're player 2, so you wait for player 1 to choose board properties");
+        GtkWidget *yoText = gtk_label_new("You're Player 2, so you wait for Player 1 to choose board properties");
         gtk_container_add(GTK_CONTAINER(boxMain), yoText);
 
         GtkWidget *yourName = gtk_entry_new();
@@ -447,7 +460,7 @@ int main(int argc,char *argv[])
 
         g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(readAndDestroyWindow), NULL);
 
-        gtk_label_set_text(GTK_LABEL(writingWait),"\nWaiting for player 1 to choose their options\n");
+        gtk_label_set_text(GTK_LABEL(writingWait),"\nWaiting for Player 1 to choose their options\n");
     }
 
     gtk_widget_show_all(window1);
@@ -762,8 +775,8 @@ void closeAndReturn() {
 }
 
 void updateNames() {
-    char s[100] = "";
-    sprintf(s, "%s: Can we please restart the game?", hisName);
+    char s[200] = "";
+    sprintf(s, "%s asks: Can we please restart the game?", hisName);
     gtk_window_set_title(GTK_WINDOW(windowRestart),s);
     sprintf(s, "Reversi - game - %s", myName);
     gtk_window_set_title(GTK_WINDOW(window),s);

@@ -2,6 +2,7 @@
 #include <time.h>
 #include <stdio.h>
 #include <gtk/gtk.h>
+#include <string.h>
 
 typedef struct Coords {
     int w;
