@@ -8,7 +8,7 @@ static PipesPtr streams;
 
 int width=-1, heigth=-1;
 int imgSize = 100;
-gboolean hilfe;
+gboolean hilfe = 0;
 gboolean otherIsReady = 0;
 gboolean boardPrepared = 0;
 gboolean change1ToRed = 0;
@@ -24,7 +24,7 @@ gchar myNameBase[100]="You";
 gchar hisName[100]="The other player";
 
 
-static gboolean button_press_callback (GtkWidget *event_box, GdkEventButton *event, gpointer data) {
+static gboolean buttonPressCallback (GtkWidget *event_box, GdkEventButton *event, gpointer data) {
     const char *name = gtk_widget_get_name(event_box);
     coords c = readWhere(name);
     if (whosTurn == 1 && can1MakeAMove(game, c)==1 && player==1) {
@@ -99,9 +99,17 @@ void updateBoard() {
     c = endOfTheGame(game);
     char s[100]="";
     if (player==1) {
-        sprintf(s, "Your discs: %d\tOpponent's discs: %d", c.w, c.k);
+	if (whosTurn==1) {
+		sprintf(s, "Your discs: %d\tOpponent's discs: %d\tYour move", c.w, c.k);
+	} else {
+		sprintf(s, "Your discs: %d\tOpponent's discs: %d\tOpponent's move", c.w, c.k);	
+	}        
     } else {
-        sprintf(s, "Your discs: %d\tOpponent's discs: %d", c.k, c.w);
+	if (whosTurn==2) {
+		sprintf(s, "Your discs: %d\tOpponent's discs: %d\tYour move", c.k, c.w);
+	} else {
+		sprintf(s, "Your discs: %d\tOpponent's discs: %d\tOpponent's move", c.k, c.w);
+	}
     }
     gtk_label_set_text(GTK_LABEL(result), s);
     gtk_widget_show_all(window);
@@ -150,7 +158,7 @@ void makeBoard () {
             GtkWidget *eventBox = gtk_event_box_new();
             gtk_container_add(GTK_CONTAINER(field), eventBox);
             gtk_container_add(GTK_CONTAINER(eventBox), image);
-            g_signal_connect (G_OBJECT (eventBox), "button_press_event", G_CALLBACK (button_press_callback), image);
+            g_signal_connect (G_OBJECT (eventBox), "button_press_event", G_CALLBACK (buttonPressCallback), image);
 
             sprintf(name, "%d,%d", i, j);
             gtk_widget_set_name(eventBox, name);
@@ -166,9 +174,9 @@ void makeBoard () {
     coords c = endOfTheGame(game);
     char s[100]="";
     if (player==1) {
-        sprintf(s, "Your discs: %d\tOpponent's discs: %d", c.w, c.k);
+        sprintf(s, "Your discs: %d\tOpponent's discs: %d\tYour move", c.w, c.k);
     } else {
-        sprintf(s, "Your discs: %d\tOpponent's discs: %d", c.k, c.w);
+        sprintf(s, "Your discs: %d\tOpponent's discs: %d\tOpponent's move", c.k, c.w);
     }
     gtk_label_set_text(GTK_LABEL(result), s);
 
@@ -329,23 +337,21 @@ int main(int argc,char *argv[])
     gtk_box_pack_start(GTK_BOX(box1), frame, TRUE, TRUE, 20);
 
     windowWait = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_transient_for(GTK_WINDOW(windowWait), GTK_WINDOW(window1));
-   // windowWait = gtk_dialog_new();
+   // gtk_window_set_transient_for(GTK_WINDOW(windowWait), GTK_WINDOW(window1));
     gtk_window_set_title(GTK_WINDOW(windowWait),"Hold on...");
-    gtk_window_set_position(GTK_WINDOW(windowWait),GTK_WIN_POS_CENTER_ON_PARENT);
+   // gtk_window_set_position(GTK_WINDOW(windowWait),GTK_WIN_POS_CENTER_ON_PARENT);
     gtk_container_set_border_width(GTK_CONTAINER(windowWait), 10);
     GtkWidget *boxWait = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_container_add(GTK_CONTAINER(windowWait), boxWait);
-  //  GtkWidget *boxWait = gtk_dialog_get_content_area(GTK_DIALOG(windowWait));
     GtkWidget *writingWait = gtk_label_new("");
     gtk_container_add(GTK_CONTAINER(boxWait), writingWait);
     g_signal_connect(G_OBJECT(windowWait), "destroy", G_CALLBACK(endMyGame), NULL);
 
 
     windowEnd = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_transient_for(GTK_WINDOW(windowEnd), GTK_WINDOW(window));
+ //   gtk_window_set_transient_for(GTK_WINDOW(windowEnd), GTK_WINDOW(window));
 
-    gtk_window_set_position(GTK_WINDOW(windowEnd),GTK_WIN_POS_CENTER);
+  //  gtk_window_set_position(GTK_WINDOW(windowEnd),GTK_WIN_POS_CENTER);
     gtk_container_set_border_width(GTK_CONTAINER(windowEnd), 10);
     g_signal_connect(G_OBJECT(windowEnd), "destroy", G_CALLBACK(endMyGame), NULL);
 
